@@ -8,10 +8,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 
+import android.widget.TextView;
 import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.Set;
@@ -21,6 +23,7 @@ public class BlueToothConnect extends Activity  {
     private BluetoothAdapter BA;
     private Set<BluetoothDevice>pairedDevices;
     ListView lv;
+    public static String EXTRA_ADDRESS = "device_address";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,9 +31,9 @@ public class BlueToothConnect extends Activity  {
         setContentView(R.layout.activity_blue_tooth_connect);
 
         b1 = (Button) findViewById(R.id.button1);
-        b2= (Button) findViewById(R.id.button2);
-        b3= (Button) findViewById(R.id.button3);
-        b4= (Button) findViewById(R.id.button4);
+        b2 = (Button) findViewById(R.id.button2);
+        b3 = (Button) findViewById(R.id.button3);
+        b4 = (Button) findViewById(R.id.button4);
 
         BA = BluetoothAdapter.getDefaultAdapter();
         lv = (ListView)findViewById(R.id.listView);
@@ -63,11 +66,29 @@ public class BlueToothConnect extends Activity  {
 
         ArrayList list = new ArrayList();
 
-        for(BluetoothDevice bt : pairedDevices) list.add(bt.getName());
+        for(BluetoothDevice bt : pairedDevices) list.add(bt.getName() + "\n" + bt.getAddress());
         Toast.makeText(getApplicationContext(), "Showing Paired Devices",Toast.LENGTH_SHORT).show();
 
         final ArrayAdapter adapter = new  ArrayAdapter(this,android.R.layout.simple_list_item_1, list);
 
         lv.setAdapter(adapter);
+        lv.setOnItemClickListener(myListClickListener);
     }
+
+    private AdapterView.OnItemClickListener myListClickListener = new AdapterView.OnItemClickListener()
+    {
+        public void onItemClick (AdapterView<?> av, View v, int arg2, long arg3)
+        {
+            // Get the device MAC address, the last 17 chars in the View
+            String info = ((TextView) v).getText().toString();
+            String address = info.substring(info.length() - 17);
+
+            // Make an intent to start next activity.
+            Intent i = new Intent(BlueToothConnect.this, Controller.class);
+
+            //Change the activity.
+            i.putExtra(EXTRA_ADDRESS, address); //this will be received at ledControl (class) Activity
+            startActivity(i);
+        }
+    };
 }
